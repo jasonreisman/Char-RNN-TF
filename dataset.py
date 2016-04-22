@@ -49,11 +49,11 @@ class Dataset(object):
 	def _create_batches(self):
 		assert self._encoded_data is not None
 		# figure out how many batches we can actually create
-		items_per_batch = self._batch_size*self._seq_len + 1 # plus 1 to have final symbol in batch
-		self._num_batches = int(len(self._encoded_data) / items_per_batch)
+		items_per_batch = self._batch_size*self._seq_len
+		self._num_batches = int(len(self._encoded_data) / items_per_batch) - 1
+			# minus 1 to ensure that we have a final symbol in each batch
+			# that matches the first symbol in the next batch
 		assert self._num_batches > 0
-		# resize data so its length is a perfect multiple of items_per_batch
-		self._encoded_data = self._encoded_data[:self._num_batches * items_per_batch]
 
 	def get_batches(self):
 		items_per_batch = self._batch_size*self._seq_len
