@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import tensorflow as tf
 from tensorflow.models.rnn import rnn, rnn_cell
 
@@ -15,10 +16,14 @@ class RNNConfig:
 		self.num_layers = num_layers
 		self.num_classes = num_classes
 
-	@property
-	def checkpoint_name(self):
+	def get_checkpoint_path(self, dir):
+		chkpt_path = os.path.join(dir, self._get_checkpoint_name())
+		return chkpt_path
+
+	def _get_checkpoint_name(self):
 		chkpt_name = '%s-%s-%i-%i-%i.chkpt' % (self.name, self.cell_type, self.num_hidden, self.num_layers, self.num_classes)
 		return chkpt_name
+
 
 class RNN(object):
 	# members

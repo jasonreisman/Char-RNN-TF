@@ -6,14 +6,9 @@ import time
 import dataset
 import network
 
-def ensure_checkpoint_dir(savedir):
-	if not os.path.exists(savedir):
-		os.makedirs(savedir)
-
-def get_checkpoint_path(savedir, config):
-	ensure_checkpoint_dir(savedir)
-	chkpt_path = os.path.join(savedir, config.checkpoint_name)
-	return chkpt_path
+def ensure_dir(dir):
+	if not os.path.exists(dir):
+		os.makedirs(dir)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -40,7 +35,7 @@ def main():
 	print 'Building network'
 	config = network.RNNConfig(ds.hash, args.nhidden, args.nlayers, ds.num_classes)
 	rnn = network.RNN(config, args.batchsize, args.seqlen)
-	chkpt_path = get_checkpoint_path(args.savedir, config)
+	chkpt_path = config.get_checkpoint_path(args.savedir)
 	print '\t- Checkpoint path: %s' % (chkpt_path)
 	print 'Done building network'
 
@@ -61,7 +56,7 @@ def main():
 		# restore previous state if possible
 		saver = tf.train.Saver(tf.all_variables())
 		if os.path.exists(chkpt_path):
-			print '\t- Restoring graph from previous checkpoint: %s' % (chkpt_path)
+			print '\t- Restoring graph from previous checkpoint'
 			saver.restore(sess, chkpt_path)
 		print 'Done initializing session'
 		num_iters = 0
@@ -76,6 +71,7 @@ def main():
 				num_iters += 1
 				if num_iters % args.savefreq == 0:
 					print '\t- Saving graph to checkpoint: %s' % (chkpt_path)
+					ensure_dir(args.savedir)
 					saver.save(sess, chkpt_path)
 		print 'Exiting after %i epochs' % (args.epochs)
 
