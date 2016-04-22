@@ -6,13 +6,13 @@ import time
 import dataset
 import network
 
-def ensure_checkpoint_dir(args):
-	if not os.path.exists(args.savedir):
-		os.makedirs(args.savedir)
+def ensure_checkpoint_dir(savedir):
+	if not os.path.exists(savedir):
+		os.makedirs(savedir)
 
-def get_checkpoint_path(args, config):
-	ensure_checkpoint_dir(args)
-	chkpt_path = os.path.join(args.savedir, config.checkpoint_name)
+def get_checkpoint_path(savedir, config):
+	ensure_checkpoint_dir(savedir)
+	chkpt_path = os.path.join(savedir, config.checkpoint_name)
 	return chkpt_path
 
 def parse_args():
@@ -38,10 +38,9 @@ def main():
 	print 'Done reading input'
 
 	print 'Building network'
-	name = os.path.basename(args.input)
-	config = network.RNNConfig(name, args.nhidden, args.nlayers, ds.num_classes)
+	config = network.RNNConfig(ds.hash, args.nhidden, args.nlayers, ds.num_classes)
 	rnn = network.RNN(config, args.batchsize, args.seqlen)
-	chkpt_path = get_checkpoint_path(args, config)
+	chkpt_path = get_checkpoint_path(args.savedir, config)
 	print '\t- Checkpoint path: %s' % (chkpt_path)
 	print 'Done building network'
 

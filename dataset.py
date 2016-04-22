@@ -1,4 +1,5 @@
 import collections
+import hashlib
 import numpy as np
 import os
 
@@ -6,6 +7,7 @@ class Dataset(object):
 	_input_path = None
 	_batch_size = None
 	_seq_len = None
+	_hash = None
 	_encoding = {}
 	_decoding = {}
 	_encoded_data = None
@@ -27,6 +29,10 @@ class Dataset(object):
 		assert os.path.exists(input_path), "Input file %s doesn't exist :-(" % (input_path)
 		with open(input_path, 'r') as f:
 			raw_data = f.read()
+		# compute hash of raw data
+		sha1 = hashlib.sha1()
+		sha1.update(raw_data)
+		self._hash = sha1.hexdigest()
 		# get the frequency of each item in raw_data
 		counter = collections.Counter(raw_data)
 		# sort the frequencies in descending order
@@ -69,6 +75,10 @@ class Dataset(object):
 		return self._seq_len
 
 	@property
+	def hash(self):
+		return self._hash
+
+	@property
 	def num_classes(self):
 		return len(self._encoding)
 
@@ -79,19 +89,3 @@ class Dataset(object):
 	def decode(self, symbol):
 		assert symbol in self._decoding
 		return self._decoding[symbol]
-
-# class TestConfig(object):
-# 	input_path = 'input.txt'
-# 	batch_size = 4
-# 	seq_len = 32
-
-# if __name__=='__main__':
-# 	config = TestConfig()
-# 	reader = CharReader(config)
-# 	for i, (x, y) in enumerate(reader.get_batches()):
-# 		print '(%i, x) ------------------------' % (i)
-# 		print ''.join(map(reader.decode, list(x.reshape(-1))))
-# 		print '(%i, y) ------------------------' % (i)		
-# 		print ''.join(map(reader.decode, list(y.reshape(-1))))
-
-
