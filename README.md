@@ -21,9 +21,9 @@ The number of neurons in the hidden RNN layers can be controlled by supplying a 
 
 Checkpoint files, which output the state of the computation graph to disk (so it can be rehydrated later for additional training or string generation), are saved every `savefreq` batches.  The default frequency is to output a checkpoint after every 100 batches, but this can be changed by providing a `--savefreq` argument on the command line.  
 
-The directory where checkpoints are written to can be specified with the `--savedir`.  The default directory is "checkpoints".
+The directory where checkpoints are written to can be specified with the `--savedir`.  The default directory is `./checkpoints`.
 
-A unique checkpoint will be created for each combination of input file and network params.
+A unique checkpoint will be created for each combination of input file and network params.  For example, given an input file, the checkpoint for the 2 layer, 128 nueron network can be uniquely identified separately from the network trained on the same input file but with 3 layers of 512 neurons.
 
 ## Generation
 
