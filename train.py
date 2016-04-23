@@ -61,6 +61,7 @@ def main():
 		print 'Done initializing session'
 		num_iters = 0
 		for i in range(args.epochs):
+			rnn.reset_initial_state()
 			state = rnn.initial_state.eval()
 			for j, (x, y) in enumerate(ds.get_batches()):
 				t0 = time.time()

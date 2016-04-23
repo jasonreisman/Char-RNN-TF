@@ -32,6 +32,7 @@ class RNN(object):
 	_seq_len = None
 	_input_ids = None
 	_target_ids = None
+	_stack = None
 	_state0 = None
 	_state1 = None
 	_probs = None
@@ -80,12 +81,12 @@ class RNN(object):
 		
 		# create LSTM cell and stack
 		cell = rnn_cell.BasicLSTMCell(config.num_hidden)
-		stack = rnn_cell.MultiRNNCell([cell]*config.num_layers)
-		self._state0 = stack.zero_state(self._batch_size, tf.float32)
+		self._stack = rnn_cell.MultiRNNCell([cell]*config.num_layers)
+		self._state0 = self._stack.zero_state(self._batch_size, tf.float32)
 
 		# Pump the inputs through the RNN layers
 		# outputs is a list of length S containing BxH tensors
-		outputs, self._state1 = rnn.rnn(stack, inputs, initial_state=self._state0)
+		outputs, self._state1 = rnn.rnn(self._stack, inputs, initial_state=self._state0)
 		assert len(outputs) == self._seq_len
 		#assert outputs[0].get_shape() == (self._batch_size, config.num_hidden), outputs[0].get_shape()
 
@@ -116,6 +117,9 @@ class RNN(object):
 		
 		# cost is a scalar containing the mean of cross_entropy losses
 		self._cost = tf.reduce_mean(cross_entropy)
+
+	def reset_initial_state(self):
+		self._state0 = self._stack.zero_state(self._batch_size, tf.float32)
 
 	@property
 	def config(self):
