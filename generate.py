@@ -6,9 +6,6 @@ import tensorflow as tf
 import dataset
 import network
 
-# random seed affects np.random.choice below
-np.random.seed(0)
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', type=str, required=True, help='Path to input file')
@@ -17,11 +14,16 @@ def parse_args():
     parser.add_argument('--savedir', type=str, default='checkpoints', help='Directory where checkpoints are saved')
     parser.add_argument('--length', type=int, default=512, help='The number of characters that will be generated')
     parser.add_argument('--prime', type=str, default='The meaning of life is ', help='Text to prime the generator with')    
+    parser.add_argument('--seed', type=int, default=0, help='Seed for random number generator to pick characters with')        
     args = parser.parse_args()
     return args
 
 def main():
 	args = parse_args()
+
+	# random seed affects np.random.choice below
+	np.random.seed(args.seed)
+
 	print 'Reading input'
 	print '\t- Input file: %s' % (args.input)
 	ds = dataset.Dataset(args.input, 50, 50)
