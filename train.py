@@ -74,6 +74,9 @@ def main():
 					print '\t- Saving graph to checkpoint: %s' % (chkpt_path)
 					ensure_dir(args.savedir)
 					saver.save(sess, chkpt_path)
+			print '\t- Saving graph to checkpoint: %s' % (chkpt_path)
+			ensure_dir(args.savedir)
+			saver.save(sess, chkpt_path)
 		print 'Exiting after %i epochs' % (args.epochs)
 
 if __name__ == '__main__':
