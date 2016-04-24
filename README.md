@@ -1,6 +1,6 @@
 # Char-RNN-TF
 
-A miniature clone of char-rnn written in TensorFlow (TF), based on Andrej Karpathy's wonderful blog post, [The Unreasonable Effectiveness of Recurrent Neural Networks](http://karpathy.github.io/2015/05/21/rnn-effectiveness/), and [associated code](https://github.com/karpathy/char-rnn).  This was my first exposure to TF, so I tried to document the code in an effort to clarify aspects of TF's API that weren't clear to me when I first started reading TF code.
+A miniature clone of char-rnn written in TensorFlow (TF), based on Andrej Karpathy's wonderful blog post, [The Unreasonable Effectiveness of Recurrent Neural Networks](http://karpathy.github.io/2015/05/21/rnn-effectiveness/), and [associated code](https://github.com/karpathy/char-rnn).  This was my first exposure to TF, so I tried to document the code (particularly `train.py`) in an effort to clarify aspects of TF's API that weren't clear to me when I first started reading TF code.
 
 ## Training
 
