@@ -24,7 +24,6 @@ class RNNConfig:
 		chkpt_name = '%s-%s-%i-%i-%i.chkpt' % (self.name, self.cell_type, self.num_hidden, self.num_layers, self.num_classes)
 		return chkpt_name
 
-
 class RNN(object):
 	# members
 	_config = None
@@ -38,7 +37,7 @@ class RNN(object):
 	_probs = None
 	_cost = None
 
-	def __init__(self, config, batch_size, seq_len):
+	def __init__(self, config, batch_size, seq_len, **kwargs):
 		assert config.name is not None
 		assert config.num_hidden > 0
 		assert config.num_layers > 0
@@ -46,9 +45,11 @@ class RNN(object):
 		self._config = config
 		self._batch_size = batch_size
 		self._seq_len = seq_len
-		self._build_network()
+		dropout = kwargs.get('dropout', 0)
+		assert 0 <= dropout < 1
+		self._build_network(dropout)
 
-	def _build_network(self):
+	def _build_network(self, dropout):
 		# Legend for tensor shapes below:
 		# 	B := batch size
 		# 	C := number of classes
@@ -81,6 +82,9 @@ class RNN(object):
 		
 		# create LSTM cell and stack
 		cell = rnn_cell.BasicLSTMCell(config.num_hidden)
+		if dropout > 0:
+			keep_prob = 1 - dropout
+			cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
 		self._stack = rnn_cell.MultiRNNCell([cell]*config.num_layers)
 		self._state0 = self._stack.zero_state(self._batch_size, tf.float32)
 

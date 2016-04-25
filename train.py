@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument('--savefreq', type=int, default=100, help='Number of batches between checkpoint creation')
     parser.add_argument('--gradclip', type=float, default=5., help='Max gradient norm before clipping')
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
+    parser.add_argument('--dropout', type=float, default=0, help='Probability of a neuron dropping out during training')    
     args = parser.parse_args()
     return args
 
@@ -34,7 +35,7 @@ def main():
 
 	print 'Building network'
 	config = network.RNNConfig(ds.hash, args.nhidden, args.nlayers, ds.num_classes)
-	rnn = network.RNN(config, args.batchsize, args.seqlen)
+	rnn = network.RNN(config, args.batchsize, args.seqlen, dropout=args.dropout)
 	chkpt_path = config.get_checkpoint_path(args.savedir)
 	print '\t- Checkpoint path: %s' % (chkpt_path)
 	print 'Done building network'
