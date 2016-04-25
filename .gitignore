@@ -1,4 +1,5 @@
 *.pyc
 *.chkpt
 *.chkpt.meta
+*.meta
 checkpoint
