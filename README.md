@@ -37,3 +37,47 @@ The length of the generated string is controlled by the `--length` argument.  Th
 
 You can also supply a string of text to "prime" the generator with using the `--prime` parameter.`  The default is, "The meaning of life is ".
 
+#### Example
+Here's some sample output from a two layer, 512 neuron (per layer) LSTM network after training on several hundred batches:
+```
+BENVOLIO:
+Give me you alone, that shake crow.
+See these lord, to serve thee, what brought's levio; and I
+were an ill unback is denown in so?
+
+JULIET:
+I know, gentle prettiest lord!
+
+QUEEN:
+Think how hour no pauled cells?
+Then, madam, then and O, the deech behalf?
+Thou liest, and in Venusain!--nor of Nap, Cominius!
+
+ROMEO:
+Be not so: look impute to him; a heir of honour's jest,
+Thither it is, by the First, marry sir?
+
+JULIET:
+A dog to the lean as they are this me,
+But shall not light all sub it, but aloned, with her true,
+So ceptate it, or dead; and noise it:
+And then, can therefore ratcong him, look it Jock,
+Romeo's lord, yet we must call them were often brings be disploies.
+have that twa'en the prince slain by dear tears,
+To comfare thy lord, and if I should it thy name.
+This name, if thou say, thou weeping bones, misty.
+
+ROMEO:
+To come, gentleman, Jedienes!
+
+PoLIVA:
+There I would I air?
+
+OXFORK:
+Be adoth, no doubt! I, no trial.
+
+ROMEO:
+Out, gentleman, with he,
+Or, that the heaven cooks: where say, then, Greenable;
+And 'I see the friar length all death,-hand, will be jound, in our county.
+```
