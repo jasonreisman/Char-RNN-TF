@@ -21,18 +21,9 @@ class Dataset(object):
 		# load a cached copy if possible, otherwise create one
 		self._load_or_create_metadata()
 		assert Dataset._metadata_intact(self._meta)
-		# create a dict of char -> int, and int -> char
-		chars = self._meta['chars']
-		num_chars = len(chars)
-		self._encoding = dict(zip(chars, range(num_chars)))
-		self._decoding = dict(zip(range(num_chars), chars))
-		# figure out how many batches we can actually create
-		data_length = self._meta['length']
-		items_per_batch = self._batch_size*self._seq_len
-		self._num_batches = int(data_length / items_per_batch) - 1
-			# minus 1 to ensure that we have a final symbol in each batch
-			# that matches the first symbol in the next batch
-		assert self._num_batches > 0
+		# now that we have dataset metadata, build out encoding
+		# and decoding dictionaries, as well as total num of batches
+		self._process_metadata()
 
 	def _load_or_create_metadata(self):
 		meta_path = self._input_path + ".meta"
@@ -42,6 +33,7 @@ class Dataset(object):
 				with open(meta_path, 'r') as f:
 					meta = json.load(f)
 				if Dataset._metadata_intact(meta):
+					print '\t- Loaded existing meta file: %s' % (meta_path)
 					self._meta = meta
 					return
 			except:
@@ -91,6 +83,22 @@ class Dataset(object):
 		# output the meta file
 		with open(meta_path, 'w') as f:
 			json.dump(self._meta, f)
+			print '\t- Created new meta file: %s' % (meta_path)
+
+
+	def _process_metadata(self):
+		# create a dict of char -> int, and int -> char
+		chars = self._meta['chars']
+		num_chars = len(chars)
+		self._encoding = dict(zip(chars, range(num_chars)))
+		self._decoding = dict(zip(range(num_chars), chars))
+		# figure out how many batches we can actually create
+		data_length = self._meta['length']
+		items_per_batch = self._batch_size*self._seq_len
+		self._num_batches = int(data_length / items_per_batch) - 1
+			# minus 1 to ensure that we have a final symbol in each batch
+			# that matches the first symbol in the next batch
+		assert self._num_batches > 0
 
 	def get_batches(self):
 		items_per_batch = self._batch_size*self._seq_len
@@ -100,7 +108,7 @@ class Dataset(object):
 				f.seek(i*items_per_batch)
 				raw_data = f.read(items_per_batch + 1)
 				assert len(raw_data) == items_per_batch + 1
-			encoded_data = np.array(list(map(self.encode, raw_data)))
+			encoded_data = np.array(map(self.encode, raw_data))
 			x0 = encoded_data[:-1]
 			y0 = encoded_data[1:]
 			x = x0.reshape([self._batch_size, -1])
