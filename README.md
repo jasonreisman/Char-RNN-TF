@@ -19,7 +19,7 @@ The number of neurons in the hidden RNN layers can be controlled by supplying a 
 
 #### Checkpoints
 
-Checkpoint files, which output the state of the computation graph to disk (so it can be rehydrated later for additional training or string generation), are saved every `savefreq` batches.  The default frequency is to output a checkpoint after every 100 batches, but this can be changed by providing a `--savefreq` argument on the command line.  
+Checkpoint files, which output the state of the computation graph to disk (so it can be rehydrated later for additional training or string generation), are saved every `savefreq` batches.  The default frequency is to output a checkpoint after every 100 batches, but this can be changed by providing a `--savefreq` argument on the command line.  A checkpoint will also be written at the end of every training epoch.
 
 The directory where checkpoints are written to can be specified with the `--savedir`.  The default directory is `./checkpoints`.
 
