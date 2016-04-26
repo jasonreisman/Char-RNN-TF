@@ -35,7 +35,7 @@ which will look up the checkpoint for the default network configuration (2 layer
 
 The length of the generated string is controlled by the `--length` argument.  The default is 512.
 
-You can also supply a string of text to "prime" the generator with using the `--prime` parameter.`  The default is, "The meaning of life is ".
+You can also supply a string of text to "prime" the generator with using the `--prime` parameter.  The default is, "The meaning of life is ".
 
 #### Example
 Here's some sample output from a two layer, 512 neuron (per layer) LSTM network after training on several hundred batches:
