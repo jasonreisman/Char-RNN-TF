@@ -38,30 +38,29 @@ def main():
 
 	print 'Initializing session'
 	# Initializing the tensor flow variables
-	init = tf.initialize_all_variables()
+	init = tf.global_variables_initializer()
 	with tf.Session() as sess:
 		sess.run(init)
-		saver = tf.train.Saver(tf.all_variables())
-		if os.path.exists(chkpt_path):
+		saver = tf.train.Saver(tf.global_variables())
+		if tf.train.checkpoint_exists(chkpt_path):
 			print '\t- Restoring graph from checkpoint'
 			saver.restore(sess, chkpt_path)
 		print 'Done initializing session'
 
 		x = np.zeros((1,1))
-		state = rnn.initial_state.eval()
 		for cur in args.prime[:-1]:
 			x[0,0] = ds.encode(cur)
-			feed = {rnn.inputs:x, rnn.initial_state:state}
-			probs, state = sess.run([rnn.probs, rnn.final_state], feed_dict=feed)
-			symbol = np.random.choice(ds.num_classes, p=probs[0])
+			feed = {rnn.inputs:x}
+			probs = sess.run([rnn.probs], feed_dict=feed)
+			symbol = np.random.choice(ds.num_classes, p=np.reshape(probs[0], ds.num_classes))
 
 		generated = args.prime
 		cur = args.prime[-1]
 		for i in range(args.length):
 			x[0,0] = ds.encode(cur)
-			feed = {rnn.inputs:x, rnn.initial_state:state}
-			probs, state = sess.run([rnn.probs, rnn.final_state], feed_dict=feed)
-			symbol = np.random.choice(ds.num_classes, p=probs[0])
+			feed = {rnn.inputs:x}
+			probs = sess.run([rnn.probs], feed_dict=feed)
+			symbol = np.random.choice(np.arange(ds.num_classes), p=np.reshape(probs[0], ds.num_classes))
 			next = ds.decode(symbol)
 			generated += next
 			cur = next

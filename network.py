@@ -1,17 +1,12 @@
 import numpy as np
 import os
 import tensorflow as tf
-from tensorflow.models.rnn import rnn, rnn_cell
+from tensorflow.contrib.rnn import BasicLSTMCell, DropoutWrapper, MultiRNNCell, static_rnn
 
 class RNNConfig:
-	name = None
-	cell_type = 'LSTM'
-	num_hidden = -1
-	num_layers = -1
-	num_classes = -1
-
 	def __init__(self, name, num_hidden, num_layers, num_classes):
 		self.name = name
+		self.cell_type = 'LSTM'
 		self.num_hidden = num_hidden
 		self.num_layers = num_layers
 		self.num_classes = num_classes
@@ -25,18 +20,6 @@ class RNNConfig:
 		return chkpt_name
 
 class RNN(object):
-	# members
-	_config = None
-	_batch_size = None
-	_seq_len = None
-	_input_ids = None
-	_target_ids = None
-	_stack = None
-	_state0 = None
-	_state1 = None
-	_probs = None
-	_cost = None
-
 	def __init__(self, config, batch_size, seq_len, **kwargs):
 		assert config.name is not None
 		assert config.num_hidden > 0
@@ -45,6 +28,12 @@ class RNN(object):
 		self._config = config
 		self._batch_size = batch_size
 		self._seq_len = seq_len
+		self._input_ids = None
+		self._target_ids = None
+		self._stack = None
+		self._state = None
+		self._probs = None
+		self._loss = None		
 		dropout = kwargs.get('dropout', 0)
 		assert 0 <= dropout < 1
 		self._build_network(dropout)
@@ -75,23 +64,23 @@ class RNN(object):
 			# embedded is a BxSxH tensor
 			embedded = tf.nn.embedding_lookup(embeddings, self._input_ids)
 			# sequences is a list of length S containing Bx1xH tensors
-			sequences = tf.split(1, self._seq_len, embedded)
+			sequences = tf.split(embedded, self._seq_len, 1)
 			# perform a "squeeze" on each item in the sequence list 
 			# inputs is a list of length S containing BxH tensors
 			inputs = [tf.squeeze(seq, [1]) for seq in sequences]
 		
 		# create LSTM cell and stack
-		cell = rnn_cell.BasicLSTMCell(config.num_hidden)
+		cell = BasicLSTMCell(config.num_hidden)
 		if dropout > 0:
 			keep_prob = 1 - dropout
-			cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
-		self._stack = rnn_cell.MultiRNNCell([cell]*config.num_layers)
-		self._state0 = self._stack.zero_state(self._batch_size, tf.float32)
+			cell = DropoutWrapper(cell, output_keep_prob=keep_prob)
+		self._stack = MultiRNNCell([cell]*config.num_layers)
+		self._state = self._stack.zero_state(self._batch_size, tf.float32)
 
 		# Pump the inputs through the RNN layers
 		# outputs is a list of length S containing BxH tensors
-		outputs, self._state1 = rnn.rnn(self._stack, inputs, initial_state=self._state0)
-		assert len(outputs) == self._seq_len
+		outputs, self._state = static_rnn(self._stack, inputs, initial_state=self._state)
+		# assert len(outputs) == self._seq_len
 		#assert outputs[0].get_shape() == (self._batch_size, config.num_hidden), outputs[0].get_shape()
 
 		# Softmax weight tensor is HxC
@@ -102,7 +91,7 @@ class RNN(object):
 		# Reshape the output so that we can use it with the softmax weights and bias:
 		# 	- concat makes list into a BxSH tensor,
 		# 	- reshape converts the BxSH tensor into a BSxH tensor
-		output = tf.reshape(tf.concat(1, outputs), [-1, config.num_hidden])
+		output = tf.reshape(tf.concat(outputs, 1), [-1, config.num_hidden])
 		#assert output.get_shape() == (self._batch_size*self._seq_len, config.num_hidden), output.get_shape()
 
 		# logits is a (BSxH).(HxC) + 1xC = BSxC + 1xC = BSxC tensor
@@ -116,14 +105,14 @@ class RNN(object):
 		# targets is a BSx1 tensor
 		targets = tf.reshape(self._target_ids, [self._batch_size*self._seq_len])
 		# cross_entropy is a BSx1 tensor
-		cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, targets)
+		cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=targets)
 		#assert cross_entropy.get_shape() == (self._batch_size*self._seq_len)
 		
-		# cost is a scalar containing the mean of cross_entropy losses
-		self._cost = tf.reduce_mean(cross_entropy)
+		# loss is a scalar containing the mean of cross_entropy losses
+		self._loss = tf.reduce_mean(cross_entropy)
 
 	def reset_initial_state(self):
-		self._state0 = self._stack.zero_state(self._batch_size, tf.float32)
+		self._state = self._stack.zero_state(self._batch_size, tf.float32)
 
 	@property
 	def config(self):
@@ -147,23 +136,15 @@ class RNN(object):
 
 	@property
 	def initial_state(self):
-		return self._state0
-
-	@initial_state.setter
-	def initial_state(self, state0):
-		self._state0 = state0
-
-	@property
-	def final_state(self):
-		return self._state1
+		return self._state
 
 	@property
 	def probs(self):
 		return self._probs
 
 	@property
-	def cost(self):
-		return self._cost
+	def loss(self):
+		return self._loss
 
 def test_instantiation():
 	config = RNNConfig('Test', 512, 2, 64)

@@ -5,18 +5,14 @@ import numpy as np
 import os
 
 class Dataset(object):
-	_input_path = None
-	_batch_size = None
-	_seq_len = None
-	_meta = None
-	_encoding = {}
-	_decoding = {}
-	_num_batches = -1
-
 	def __init__(self, input_path, batch_size, seq_len):
 		self._input_path = input_path
 		self._batch_size = batch_size
 		self._seq_len = seq_len
+		self._meta = None
+		self._encoding = {}
+		self._decoding = {}
+		self._num_batches = -1		
 		# get metadata (length, hash, char set) for the input file
 		# load a cached copy if possible, otherwise create one
 		self._load_or_create_metadata()
@@ -39,7 +35,7 @@ class Dataset(object):
 			except:
 				pass
 		# no metadata file exists, create one
-		self._create_metadata()
+		self._create_metadata(meta_path)
 
 	@staticmethod
 	def _metadata_intact(meta):
@@ -53,7 +49,7 @@ class Dataset(object):
 			return False
 		return True		
 
-	def _create_metadata(self):
+	def _create_metadata(self, meta_path):
 		sha1 = hashlib.sha1()
 		counter = None
 		with open(self._input_path, 'r') as f:

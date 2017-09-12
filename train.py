@@ -42,7 +42,7 @@ def main():
 
 	print 'Building optimizer'
 	tvars = tf.trainable_variables()
-	grads, _ = tf.clip_by_global_norm(tf.gradients(rnn.cost, tvars), args.gradclip)
+	grads, _ = tf.clip_by_global_norm(tf.gradients(rnn.loss, tvars), args.gradclip)
 	lr = tf.Variable(0.0, trainable=False)
 	optimizer = tf.train.AdamOptimizer(lr)
 	train = optimizer.apply_gradients(zip(grads, tvars))
@@ -50,26 +50,26 @@ def main():
 
 	print 'Initializing session'
 	# Initializing the tensor flow variables
-	init = tf.initialize_all_variables()
+	init = tf.global_variables_initializer()
 	with tf.Session() as sess:
 		sess.run(init)
 		sess.run(tf.assign(lr, args.lr))
 		# restore previous state if possible
-		saver = tf.train.Saver(tf.all_variables())
-		if os.path.exists(chkpt_path):
+		saver = tf.train.Saver(tf.global_variables())
+		if tf.train.checkpoint_exists(chkpt_path):
 			print '\t- Restoring graph from previous checkpoint'
 			saver.restore(sess, chkpt_path)
 		print 'Done initializing session'
 		num_iters = 0
 		for i in range(args.epochs):
 			rnn.reset_initial_state()
-			state = rnn.initial_state.eval()
+			state = rnn.initial_state
 			for j, (x, y) in enumerate(ds.get_batches()):
 				t0 = time.time()
-				feed = {rnn.inputs:x, rnn.targets:y, rnn.initial_state:state}
-				cost, state, _ = sess.run((rnn.cost, rnn.final_state, train), feed_dict=feed)
+				feed = {rnn.inputs:x, rnn.targets:y}
+				loss, _ = sess.run((rnn.loss, train), feed_dict=feed)
 				t1 = time.time()
-				print '\t- Epoch %i, Iter %i, loss: %.2f, time: %.2f' % (i, j, cost, t1-t0)
+				print '\t- Epoch %i, Iter %i, loss: %.2f, time: %.2f' % (i, j, loss, t1-t0)
 				num_iters += 1
 				if num_iters % args.savefreq == 0:
 					print '\t- Saving graph to checkpoint: %s' % (chkpt_path)
